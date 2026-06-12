@@ -1,70 +1,70 @@
 # 🌅 Good Morning, Vietnam
 
-> *"Gooood morning, Vietnam!"* — la tua finestra di 5 ore di Claude Max parte mentre tu dormi ancora.
+> *"Gooood morning, Vietnam!"* — your Claude Max 5-hour window starts while you're still asleep.
 
 **Landing page:** https://marcozambrella.github.io/gooodmorning-vietnam/
 
-## Il problema
+## The Problem
 
-Il piano Claude Max ha un limite di utilizzo che si resetta ogni **5 ore**, ma il timer parte solo dal **primo messaggio** che mandi. Se inizi a lavorare alle 10:00 e finisci i crediti alle 12:00, devi aspettare fino alle 15:00.
+Claude Max gives you a generous usage window that resets every **5 hours**, but the timer only starts at your **first message**. Start working at 10:00 AM, hit your limit at noon — you're now stuck until 3:00 PM, waiting the full 5 hours.
 
-## La soluzione
+## The Solution
 
-Un'automazione su **GitHub Actions** (quindi funziona anche a computer spento) che manda un "buongiorno" a Claude appena la finestra precedente scade. Esempio:
+A tiny automation on **GitHub Actions** (works even when your computer is off) that sends Claude a "good morning" the moment your previous window expires. Example:
 
-- 🌅 L'automazione manda il buongiorno alle **8:00** → la finestra 5h parte subito.
-- 💻 Tu inizi a lavorare alle **10:00**.
-- ⏳ Se finisci i crediti, il reset arriva alle **13:00**: aspetti solo 3 ore, non 5.
+- 🌅 Automation sends the greeting at **8:00 AM** → 5-hour window starts immediately.
+- 💻 You sit down to work at **10:00 AM**.
+- ⏳ If you hit your limit at noon, reset lands at **1:00 PM**: wait 1 hour instead of 3.
 
-La cadenza è **dinamica**: lo script controlla lo stato reale della finestra e riparte sempre dall'ultima sessione. Se una sessione è già in corso, **non manda nulla**.
+The schedule is **dynamic**: the script checks the actual window state and always restarts from your last session. If a session is already active, it sends nothing.
 
-## Come funziona
+## How It Works
 
-Il workflow (`.github/workflows/good-morning.yml`) gira ogni 15 minuti e lancia `automation/good_morning.py`, che:
+The workflow (`.github/workflows/good-morning.yml`) runs every 15 minutes and executes `automation/good_morning.py`, which:
 
-1. Interroga l'endpoint usage OAuth di Anthropic per leggere lo stato della finestra 5h.
-2. **Finestra attiva?** → skip, nessun messaggio (non sprechi crediti).
-3. **Finestra scaduta?** → manda un messaggio minimo via `claude -p` con il modello Haiku (il più economico), avviando una nuova finestra.
-4. Se l'endpoint usage non risponde, usa un fallback locale (`automation/state.json` con il timestamp dell'ultimo invio).
+1. Queries Anthropic's OAuth usage endpoint to read the 5-hour window status.
+2. **Window active?** → skip, no message (don't waste credits).
+3. **Window expired?** → send a minimal message via `claude -p` with Haiku model (cheapest), starting a new window.
+4. If the usage endpoint is down, falls back to local state (`automation/state.json` with last-send timestamp).
 
-## Setup (5 minuti)
+## Setup (5 minutes)
 
-### 1. Genera il token OAuth (richiede piano Pro/Max)
+### 1. Generate your OAuth token (requires Pro/Max plan)
 
-Sul tuo computer, dove hai già fatto login a Claude Code:
+On your computer where you're already logged into Claude Code:
 
 ```bash
 claude setup-token
 ```
 
-Copia il token che viene stampato (è valido 1 anno).
+Copy the printed token — it's valid for 1 year.
 
-### 2. Imposta il secret nella repo
+### 2. Set the secret in your repo
 
 ```bash
-gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <tuo-user>/gooodmorning-vietnam
+gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <your-user>/gooodmorning-vietnam
 ```
 
-(incolla il token quando richiesto), oppure da GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
+(paste the token when prompted), or via GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
 
-### 3. Fatto!
+### 3. Done!
 
-Il workflow parte da solo. Puoi testarlo subito da **Actions → Good Morning, Vietnam → Run workflow**.
+The workflow runs automatically. Test it instantly from **Actions → Good Morning, Vietnam → Run workflow**.
 
-## Personalizzazione
+## Customization
 
 In `automation/good_morning.py`:
 
-| Costante | Default | Descrizione |
+| Constant | Default | Description |
 |---|---|---|
-| `GREETING` | "Buongiorno! ..." | Il messaggio inviato a Claude |
-| `CLAUDE_MODEL` | `haiku` | Modello usato (Haiku = costo minimo sulla quota) |
-| `WINDOW_HOURS` | `5` | Durata della finestra (per il fallback) |
+| `GREETING` | `"gooodmorning claudeee!!!"` | Message sent to Claude |
+| `CLAUDE_MODEL` | `haiku` | Model used (Haiku = minimum cost against quota) |
+| `WINDOW_HOURS` | `5` | Window duration (for fallback logic) |
 
-Nel workflow puoi anche restringere il cron (es. `*/15 5-23 * * *` per non avviare finestre di notte).
+You can also narrow the cron in the workflow (e.g. `*/15 5-23 * * *` to skip launching windows at night).
 
-## Note
+## Notes
 
-- L'endpoint usage (`api.anthropic.com/api/oauth/usage`) non è documentato ufficialmente: se cambia, lo script ricade automaticamente sul fallback a tempo.
-- Il messaggio di pre-warm consuma una quantità trascurabile di quota (un turno Haiku senza tool).
-- GitHub Actions può ritardare i cron schedulati di qualche minuto nelle ore di punta: per questo il controllo gira ogni 15 minuti.
+- The usage endpoint (`api.anthropic.com/api/oauth/usage`) is undocumented: if it changes, the script automatically falls back to time-based logic.
+- The pre-warm message costs a negligible fraction of quota (one Haiku turn, no tools).
+- GitHub Actions may delay cron jobs by a few minutes during peak hours — that's why the check runs every 15 minutes instead of hourly.
