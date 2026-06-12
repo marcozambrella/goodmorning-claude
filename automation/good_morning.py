@@ -158,7 +158,7 @@ def window_active_from_state() -> bool:
 
 
 def send_good_morning(token: str) -> bool:
-    log("Nessuna finestra attiva: invio il buongiorno per avviarne una nuova...")
+    log("Nessuna finestra attiva: invio 'gooodmorning claudee!!!' per avviarne una nuova...")
     env = dict(os.environ, CLAUDE_CODE_OAUTH_TOKEN=token)
     try:
         result = subprocess.run(
