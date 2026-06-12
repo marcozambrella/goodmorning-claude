@@ -585,24 +585,25 @@
 
     <ul class="hood-list reveal">
       <li>
-        <h3>Never double-sends</h3>
-        <p>Before saying anything, it checks Anthropic's OAuth usage endpoint. If a 5-hour window
-        is <strong>already active</strong> — because you're working, or it already fired — it stays quiet. No wasted tokens, no duplicate windows.</p>
+        <h3>Synced to your real limit</h3>
+        <p>Every wake-up call reads Anthropic's own <code>ratelimit</code> response headers — the exact
+        reset time your account sees. No guessing, no "5 hours from when I last sent something":
+        it knows <strong>to the second</strong> when your window expires, even if <em>you</em> started it.</p>
       </li>
       <li>
-        <h3>Dynamic, not a fixed alarm</h3>
-        <p>No hardcoded 8 AM. The cron probes every 15 minutes and fires the moment the previous
-        window expires, so the cycle always restarts from your <strong>last session</strong> — around the clock.</p>
+        <h3>Never double-sends</h3>
+        <p>If the saved reset time is still in the future, the run exits immediately —
+        <strong>zero API calls</strong>, zero quota. It only speaks when a new window actually needs starting.</p>
       </li>
       <li>
         <h3>Costs almost nothing</h3>
-        <p>The wake-up call is a single one-turn message on <code>haiku</code>, the cheapest model.
-        It nibbles a crumb of quota to unlock the whole loaf earlier.</p>
+        <p>The wake-up call is a single <strong>1-token</strong> message on <code>haiku</code>, the cheapest model —
+        and that same call doubles as the status probe. One crumb of quota unlocks the whole loaf earlier.</p>
       </li>
       <li>
         <h3>Fails safe</h3>
-        <p>If the usage endpoint is down or changes shape, it falls back to a committed
-        <code>state.json</code> timestamp and refuses to send more than once per window. Worst case: it does nothing.</p>
+        <p>Hit your limit? The 429 response still carries the reset time, so it stays in sync instead of erroring.
+        Network hiccup? The next run, 15 minutes later, simply tries again. Worst case: it does nothing.</p>
       </li>
     </ul>
   </div>

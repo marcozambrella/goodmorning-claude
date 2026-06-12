@@ -16,16 +16,16 @@ A tiny automation on **GitHub Actions** (works even when your computer is off) t
 - 💻 You sit down to work at **10:00 AM**.
 - ⏳ If you hit your limit at noon, reset lands at **1:00 PM**: wait 1 hour instead of 3.
 
-The schedule is **dynamic**: the script checks the actual window state and always restarts from your last session. If a session is already active, it sends nothing.
+The schedule is **dynamic**: the script stays in sync with your **real** reset time — the one Anthropic's API reports — and always restarts from your last session. If a window is already active, it does nothing at all.
 
 ## How It Works
 
 The workflow (`.github/workflows/good-morning.yml`) runs every 15 minutes and executes `automation/good_morning.py`, which:
 
-1. Queries Anthropic's OAuth usage endpoint to read the 5-hour window status.
-2. **Window active?** → skip, no message (don't waste credits).
-3. **Window expired?** → send a minimal message via `claude -p` with Haiku model (cheapest), starting a new window.
-4. If the usage endpoint is down, falls back to local state (`automation/state.json` with last-send timestamp).
+1. Reads the **real reset time** of your 5-hour window from `automation/state.json` (saved by the previous run).
+2. **Window still active?** → exits immediately. Zero API calls, zero quota used.
+3. **Window expired (or state unknown)?** → sends a minimal 1-token "good morning" directly to the Anthropic API (Haiku model). That single call does double duty: it **starts the new 5-hour window** *and* returns the `anthropic-ratelimit-unified-5h-reset` response header — the true reset time of your account.
+4. Saves that reset time back to `state.json` (committed by the workflow). The next runs know *exactly* when the window expires — even if you started it yourself by using Claude before the automation fired.
 
 ## Setup (5 minutes)
 
@@ -58,13 +58,14 @@ In `automation/good_morning.py`:
 | Constant | Default | Description |
 |---|---|---|
 | `GREETING` | `"gooodmorning claudeee!!!"` | Message sent to Claude |
-| `CLAUDE_MODEL` | `haiku` | Model used (Haiku = minimum cost against quota) |
-| `WINDOW_HOURS` | `5` | Window duration (for fallback logic) |
+| `CLAUDE_MODEL` | `claude-haiku-4-5-20251001` | Model used (Haiku = minimum cost against quota) |
+| `WINDOW_HOURS` | `5` | Fallback estimate, used only if the reset header ever disappears |
 
 You can also narrow the cron in the workflow (e.g. `*/15 5-23 * * *` to skip launching windows at night).
 
 ## Notes
 
-- The usage endpoint (`api.anthropic.com/api/oauth/usage`) is undocumented: if it changes, the script automatically falls back to time-based logic.
-- The pre-warm message costs a negligible fraction of quota (one Haiku turn, no tools).
+- The script reads the window state from the official `anthropic-ratelimit-unified-5h-*` response headers of the API call itself — the same numbers Claude Code sees. (The dedicated usage endpoint can't be used: tokens from `claude setup-token` lack the `user:profile` scope it requires.)
+- The pre-warm message costs a negligible fraction of quota: a single 1-token Haiku turn, and only when a new window actually needs starting.
+- Even if you hit your limit (HTTP 429), the response headers still carry the reset time, so the script stays in sync instead of failing.
 - GitHub Actions may delay cron jobs by a few minutes during peak hours — that's why the check runs every 15 minutes instead of hourly.
