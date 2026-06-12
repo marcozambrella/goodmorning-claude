@@ -27,13 +27,18 @@ from pathlib import Path
 USAGE_ENDPOINT = "https://api.anthropic.com/api/oauth/usage"
 STATE_FILE = Path(__file__).parent / "state.json"
 WINDOW_HOURS = 5
-GREETING = "gooodmorning claudeee!!!"
+GREETING = "gooodmorning claudeee!!!  (dont respond to this message)"
 CLAUDE_MODEL = "haiku"  # il modello piu' economico: basta un turno qualsiasi
 CLAUDE_TIMEOUT_S = 120
 
 
 def log(msg: str) -> None:
     print(f"[{datetime.now(timezone.utc).isoformat(timespec='seconds')}] {msg}", flush=True)
+
+
+def sanitize_for_log(text: str) -> str:
+    """Sostituisce i caratteri non stampabili con '?' per non rovinare i log."""
+    return "".join(c if c.isprintable() or c in "\n\t" else "?" for c in text)
 
 
 def get_token() -> str:
@@ -60,7 +65,8 @@ def fetch_usage(token: str) -> dict | None:
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except (urllib.error.URLError, json.JSONDecodeError, TimeoutError) as exc:
-        log(f"Endpoint usage non disponibile ({exc}); uso il fallback locale.")
+        log(f"Non sono riuscito a contattare l'endpoint usage di Anthropic ({exc}): "
+            f"controllo lo stato locale (state.json).")
         return None
 
 
@@ -85,6 +91,8 @@ def window_active_from_usage(usage: dict) -> bool | None:
     """True se la finestra 5h risulta gia' attiva, False se no, None se indecidibile."""
     five_hour = usage.get("five_hour")
     if not isinstance(five_hour, dict):
+        log("La risposta della API non contiene i dati 'five_hour': "
+            "non posso capire da qui se la finestra e' attiva, controllo lo stato locale.")
         return None
 
     resets_at = parse_reset_time(
@@ -95,13 +103,26 @@ def window_active_from_usage(usage: dict) -> bool | None:
     if resets_at is None:
         # Nessun reset programmato: con utilization nota e a zero, nessuna finestra attiva.
         if isinstance(utilization, (int, float)):
-            return utilization > 0
+            if utilization > 0:
+                log(f"Nessun orario di reset nella risposta, ma l'utilizzo e' {utilization} "
+                    f"(> 0): considero la finestra 5h attiva.")
+                return True
+            log("Nessun orario di reset nella risposta e utilizzo a 0: "
+                "considero la finestra 5h non attiva.")
+            return False
+        log("La risposta della API non ha un orario di reset valido ne' un utilizzo numerico: "
+            "controllo lo stato locale.")
         return None
 
     now = datetime.now(timezone.utc)
     if resets_at <= now:
+        log(f"La finestra 5h precedente e' scaduta (reset previsto per "
+            f"{resets_at.isoformat(timespec='seconds')}, ora gia' passato): "
+            f"considero la finestra non attiva.")
         return False
     if isinstance(utilization, (int, float)) and utilization <= 0:
+        log(f"La finestra 5h scadra' alle {resets_at.isoformat(timespec='seconds')} "
+            f"ma l'utilizzo e' 0: considero la finestra non attiva.")
         return False
     log(f"Finestra 5h attiva: reset alle {resets_at.isoformat(timespec='seconds')} "
         f"(tra {resets_at - now}).")
@@ -116,17 +137,23 @@ def read_state() -> dict:
 
 
 def write_state(state: dict) -> None:
-    STATE_FILE.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+    tmp_path = STATE_FILE.with_suffix(".json.tmp")
+    tmp_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+    tmp_path.replace(STATE_FILE)
 
 
 def window_active_from_state() -> bool:
     last_sent = parse_reset_time(read_state().get("last_sent"))
     if last_sent is None:
+        log("Stato locale (state.json) assente o senza 'last_sent': "
+            "considero la finestra non attiva.")
         return False
     elapsed = datetime.now(timezone.utc) - last_sent
     if elapsed < timedelta(hours=WINDOW_HOURS):
         log(f"Fallback: ultimo invio {elapsed} fa (< {WINDOW_HOURS}h), skip.")
         return True
+    log(f"Fallback: ultimo invio {elapsed} fa (>= {WINDOW_HOURS}h): "
+        f"la finestra e' considerata scaduta.")
     return False
 
 
@@ -138,6 +165,7 @@ def send_good_morning(token: str) -> bool:
             ["claude", "-p", GREETING, "--model", CLAUDE_MODEL],
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=CLAUDE_TIMEOUT_S,
             env=env,
             shell=(os.name == "nt"),  # su Windows `claude` e' un .cmd
@@ -151,10 +179,10 @@ def send_good_morning(token: str) -> bool:
 
     if result.returncode != 0:
         log(f"ERRORE: claude e' uscito con codice {result.returncode}.")
-        log(f"stderr: {result.stderr.strip()[:500]}")
+        log(f"stderr: {sanitize_for_log(result.stderr.strip())[:500]}")
         return False
 
-    log(f"Risposta di Claude: {result.stdout.strip()[:200]}")
+    log(f"Risposta di Claude: {sanitize_for_log(result.stdout.strip())[:200]}")
     return True
 
 
