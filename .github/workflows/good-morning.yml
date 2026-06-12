@@ -40,6 +40,10 @@ jobs:
           if ! git diff --quiet automation/state.json; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
+            cp automation/state.json /tmp/state.json
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/state.json automation/state.json
             git add automation/state.json
             git commit -m "chore: update last_sent state [skip ci]"
             git push
