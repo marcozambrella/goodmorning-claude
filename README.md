@@ -1,6 +1,6 @@
 # 🌅 Good Morning, Vietnam
 
-> *"Gooood morning, Vietnam!"* — your Claude Max 5-hour window starts while you're still asleep.
+> *"Gooood morning, Vietnam!"* — your Claude Max/Pro 5-hour window starts while you're still asleep.
 
 **Landing page:** https://marcozambrella.github.io/gooodmorning-vietnam/
 
