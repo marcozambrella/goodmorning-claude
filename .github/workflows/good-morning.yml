@@ -1,0 +1,46 @@
+name: Good Morning, Vietnam
+
+on:
+  schedule:
+    # Ogni 15 minuti: lo script decide da solo se inviare o saltare,
+    # quindi la cadenza effettiva resta dinamica (~ogni 5 ore dall'ultima sessione).
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: good-morning
+  cancel-in-progress: false
+
+jobs:
+  good-morning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run good morning automation
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: python automation/good_morning.py
+
+      - name: Persist state
+        run: |
+          if ! git diff --quiet automation/state.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add automation/state.json
+            git commit -m "chore: update last_sent state [skip ci]"
+            git push
+          fi
