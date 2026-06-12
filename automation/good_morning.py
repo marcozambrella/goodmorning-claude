@@ -27,10 +27,7 @@ from pathlib import Path
 USAGE_ENDPOINT = "https://api.anthropic.com/api/oauth/usage"
 STATE_FILE = Path(__file__).parent / "state.json"
 WINDOW_HOURS = 5
-GREETING = (
-    "Buongiorno! Questo e' un messaggio automatico per avviare la finestra "
-    "di utilizzo. Rispondi solo 'buongiorno' e nient'altro."
-)
+GREETING = "gooodmorning claudeee!!!"
 CLAUDE_MODEL = "haiku"  # il modello piu' economico: basta un turno qualsiasi
 CLAUDE_TIMEOUT_S = 120
 
