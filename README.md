@@ -2,7 +2,7 @@
 
 > *"gooodmorning claudeee!!!"* — your Claude Max/Pro 5-hour window starts while you're still asleep.
 
-**Landing page:** https://marcozambrella.github.io/gooodmorning-vietnam/
+**Landing page:** https://marcozambrella.github.io/goodmorning-claude/
 
 ## The Problem
 
@@ -42,7 +42,7 @@ Copy the printed token — it's valid for 1 year.
 ### 2. Set the secret in your repo
 
 ```bash
-gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <your-user>/gooodmorning-vietnam
+gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <your-user>/goodmorning-claude
 ```
 
 (paste the token when prompted), or via GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
