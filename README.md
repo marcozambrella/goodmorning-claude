@@ -1,6 +1,6 @@
-# 🌅 Good Morning, Vietnam
+# 🌅 goodmorning claude
 
-> *"Gooood morning, Vietnam!"* — your Claude Max/Pro 5-hour window starts while you're still asleep.
+> *"gooodmorning claudeee!!!"* — your Claude Max/Pro 5-hour window starts while you're still asleep.
 
 **Landing page:** https://marcozambrella.github.io/gooodmorning-vietnam/
 
@@ -10,7 +10,7 @@ Claude Max gives you a generous usage window that resets every **5 hours**, but 
 
 ## The Solution
 
-A tiny automation on **GitHub Actions** (works even when your computer is off) that sends Claude a "good morning" the moment your previous window expires. Example:
+A tiny automation on **GitHub Actions** (works even when your computer is off) that sends Claude a "gooodmorning claudeee!!!" the moment your previous window expires. Example:
 
 - 🌅 Automation sends the greeting at **8:00 AM** → 5-hour window starts immediately.
 - 💻 You sit down to work at **10:00 AM**.
@@ -24,7 +24,7 @@ The workflow (`.github/workflows/good-morning.yml`) keeps a single run alive for
 
 1. Reads the **real reset time** of your 5-hour window from `automation/state.json` (saved by the previous run).
 2. **Window still active?** → exits immediately. Zero API calls, zero quota used.
-3. **Window expired (or state unknown)?** → sends a minimal 1-token "good morning" directly to the Anthropic API (Haiku model). That single call does double duty: it **starts the new 5-hour window** *and* returns the `anthropic-ratelimit-unified-5h-reset` response header — the true reset time of your account.
+3. **Window expired (or state unknown)?** → sends a minimal 1-token "gooodmorning claudeee!!!" directly to the Anthropic API (Haiku model). That single call does double duty: it **starts the new 5-hour window** *and* returns the `anthropic-ratelimit-unified-5h-reset` response header — the true reset time of your account.
 4. Saves that reset time back to `state.json` (committed by the workflow). The next runs know *exactly* when the window expires — even if you started it yourself by using Claude before the automation fired.
 
 ## Setup (5 minutes)
@@ -49,7 +49,7 @@ gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <your-user>/gooodmorning-vietnam
 
 ### 3. Done!
 
-The workflow runs automatically. Test it instantly from **Actions → Good Morning, Vietnam → Run workflow**.
+The workflow runs automatically. Test it instantly from **Actions → goodmorning claude → Run workflow**.
 
 ## Customization
 
@@ -71,4 +71,4 @@ You can also narrow the schedule in the workflow (e.g. `2-59/5 5-23 * * *`). Bec
 - **Reliable on GitHub alone — no external service, no extra secret.** GitHub's *scheduled* crons are best-effort: under load they are delayed or skipped, sometimes for hours. So coverage does **not** rely on them firing on time. Instead, one run loops internally every 5 minutes for ~6 hours (the runner's hard limit), restarting the window the instant it expires. When that run ends, a scheduled tick that piled up in the queue starts the next run **immediately** — `concurrency` keeps exactly one tick waiting in the wings, so the baton is always there to pass. The `cron: 2-59/5` is just the safety net that re-arms the loop if the chain ever breaks.
 - **Residual edge case:** only if GitHub drops *every* scheduled tick for ~6 hours straight (longer than any gap observed so far) would there be a short pause at a hand-off, until the next tick fires and the loop resumes on its own.
 - This runs the workflow almost continuously. On a **public** repo that's free (unlimited Actions minutes); on a private repo it would quickly exhaust the monthly free minutes, so keep the repo public or budget accordingly.
-- The automated "good morning" goes to the `/v1/messages` API, **not** the Claude apps — so it will not appear in your Claude.ai / desktop conversation history. Its only visible effect is that your 5-hour usage window is started (visible on your usage/limits page while it's active).
+- The automated "goodmorning claude" goes to the `/v1/messages` API, **not** the Claude apps — so it will not appear in your Claude.ai / desktop conversation history. Its only visible effect is that your 5-hour usage window is started (visible on your usage/limits page while it's active).

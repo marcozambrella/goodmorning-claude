@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Good Morning, Vietnam — pre-warm della finestra 5h di Claude (Pro/Max).
+"""goodmorning claude — pre-warm della finestra 5h di Claude (Pro/Max).
 
 Avvia la finestra di utilizzo di 5 ore del piano Claude il prima possibile,
 restando sincronizzato con l'orario di reset REALE del tuo account.
@@ -8,7 +8,7 @@ Come funziona:
 1. Legge da state.json l'orario di reset reale salvato nell'ultimo run.
 2. Se il reset e' nel futuro -> finestra ancora attiva -> esce subito,
    zero chiamate API.
-3. Se il reset e' passato (o lo stato manca) -> manda il "buongiorno": una
+3. Se il reset e' passato (o lo stato manca) -> manda il "goodmorning claude": una
    chiamata minimale (1 token, modello haiku) a /v1/messages con il token
    OAuth di Claude Code. Quella singola chiamata avvia la nuova finestra 5h
    E restituisce negli header di risposta anthropic-ratelimit-unified-5h-*
@@ -102,7 +102,7 @@ def describe(dt: datetime, now: datetime) -> str:
 
 
 def send_good_morning(token: str) -> datetime | None:
-    """Manda il buongiorno e ritorna l'orario di reset reale, o None se fallisce."""
+    """Manda il "goodmorning claude" e ritorna l'orario di reset reale, o None se fallisce."""
     log(f"Invio {GREETING!r} (1 token, {CLAUDE_MODEL})...")
     payload = json.dumps({
         "model": CLAUDE_MODEL,
@@ -166,7 +166,7 @@ def main() -> int:
 
     resets_at = parse_iso(read_state().get("resets_at"))
     if resets_at is None:
-        log("Nessun orario di reset salvato in state.json: invio il buongiorno "
+        log("Nessun orario di reset salvato in state.json: invio il 'goodmorning claude' "
             "per scoprire (ed eventualmente avviare) la finestra corrente.")
     elif now < resets_at:
         log(f"Finestra 5h ancora attiva: reset alle {describe(resets_at, now)}. "

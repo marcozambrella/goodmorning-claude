@@ -1,4 +1,4 @@
-name: Good Morning, Vietnam
+name: goodmorning claude
 
 on:
   schedule:
@@ -37,7 +37,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # La cadenza "ogni 5 minuti" e' garantita QUI DENTRO con sleep, quindi
           # non dipende dallo scheduler di GitHub. Lo script decide ogni giro se
-          # inviare il buongiorno (finestra scaduta) o uscire subito (attiva).
+          # inviare il "goodmorning claude" (finestra scaduta) o uscire subito (attiva).
           deadline=$(( $(date +%s) + 345 * 60 ))
           while :; do
             echo "::group::check $(date -u +%H:%M:%S)Z"

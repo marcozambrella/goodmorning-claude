@@ -10,7 +10,7 @@ Developers on the Claude Max plan who hit the 5-hour usage window mid-workday. T
 
 ## Product Purpose
 
-Good Morning, Vietnam is a tiny open-source automation (Python + GitHub Actions) that starts your Claude Max 5-hour usage window before you wake up, by sending Claude an automated "good morning" the moment the previous window expires. Runs in the cloud — your computer stays off. Success: a visitor understands the trick in 10 seconds, stars the repo, and completes setup in 5 minutes.
+**goodmorning claude** is a tiny open-source automation (Python + GitHub Actions) that starts your Claude Max 5-hour usage window before you wake up, by sending Claude an automated "gooodmorning claudeee!!!" the moment the previous window expires. Runs in the cloud — your computer stays off. Success: a visitor understands the trick in 10 seconds, stars the repo, and completes setup in 5 minutes.
 
 ## Brand Personality
 
