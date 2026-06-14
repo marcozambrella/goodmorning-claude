@@ -20,7 +20,7 @@ The schedule is **dynamic**: the script stays in sync with your **real** reset t
 
 ## How It Works
 
-The workflow (`.github/workflows/good-morning.yml`) runs every 15 minutes and executes `automation/good_morning.py`, which:
+The workflow (`.github/workflows/good-morning.yml`) runs roughly every 5 minutes and executes `automation/good_morning.py`, which:
 
 1. Reads the **real reset time** of your 5-hour window from `automation/state.json` (saved by the previous run).
 2. **Window still active?** → exits immediately. Zero API calls, zero quota used.
@@ -61,11 +61,13 @@ In `automation/good_morning.py`:
 | `CLAUDE_MODEL` | `claude-haiku-4-5-20251001` | Model used (Haiku = minimum cost against quota) |
 | `WINDOW_HOURS` | `5` | Fallback estimate, used only if the reset header ever disappears |
 
-You can also narrow the cron in the workflow (e.g. `*/15 5-23 * * *` to skip launching windows at night).
+You can also narrow the cron in the workflow (e.g. `2-59/5 5-23 * * *` to skip launching windows at night).
 
 ## Notes
 
 - The script reads the window state from the official `anthropic-ratelimit-unified-5h-*` response headers of the API call itself — the same numbers Claude Code sees. (The dedicated usage endpoint can't be used: tokens from `claude setup-token` lack the `user:profile` scope it requires.)
 - The pre-warm message costs a negligible fraction of quota: a single 1-token Haiku turn, and only when a new window actually needs starting.
 - Even if you hit your limit (HTTP 429), the response headers still carry the reset time, so the script stays in sync instead of failing.
-- GitHub Actions may delay cron jobs by a few minutes during peak hours — that's why the check runs every 15 minutes instead of hourly.
+- **GitHub's scheduled crons are best-effort, not guaranteed.** Under load they are frequently delayed or skipped — sometimes for *hours* (worst at the top of the hour). When that happens your 5-hour window can lapse before the next run restarts it, so for a while no session is active. The check runs every ~5 minutes, offset from the top of the hour (per GitHub's own guidance), to shrink those gaps — but it can't eliminate them.
+- **Want guaranteed coverage?** Drive the workflow from an external scheduler that *isn't* throttled — e.g. [cron-job.org](https://cron-job.org) or a Cloudflare Worker Cron — calling the GitHub API to trigger `workflow_dispatch` (needs a fine-grained PAT with `actions: write`), or hitting the Anthropic API directly. This sidesteps GitHub's scheduler entirely.
+- The automated "good morning" goes to the `/v1/messages` API, **not** the Claude apps — so it will not appear in your Claude.ai / desktop conversation history. Its only visible effect is that your 5-hour usage window is started (visible on your usage/limits page while it's active).

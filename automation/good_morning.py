@@ -21,7 +21,8 @@ Nota: l'endpoint /api/oauth/usage NON e' utilizzabile qui — il token di
 `claude setup-token` non ha lo scope user:profile (risponde 403). Gli header
 di rate-limit della risposta messages sono la fonte ufficiale equivalente.
 
-Pensato per girare in GitHub Actions ogni 15 minuti, con il PC spento.
+Pensato per girare in GitHub Actions ogni ~5 minuti, con il PC spento
+(GitHub puo' comunque ritardare/saltare i run schedulati: vedi README).
 Richiede: CLAUDE_CODE_OAUTH_TOKEN (generato con `claude setup-token`).
 """
 
@@ -151,7 +152,7 @@ def send_good_morning(token: str) -> datetime | None:
             log(f"Dettaglio API: {body}")
             return None
         log(f"ERRORE: l'API ha risposto HTTP {exc.code}. Dettaglio: {body}")
-        log("Riprovera' automaticamente al prossimo run (entro 15 minuti).")
+        log("Riprovera' automaticamente al prossimo run schedulato.")
         return None
     except (urllib.error.URLError, TimeoutError) as exc:
         log(f"ERRORE di rete verso l'API ({exc}). Riprovera' al prossimo run.")
