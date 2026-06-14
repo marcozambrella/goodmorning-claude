@@ -14,7 +14,7 @@ Developers on the Claude Max plan who hit the 5-hour usage window mid-workday. T
 
 ## Brand Personality
 
-Loud, irreverent, precise. The voice of a 1960s radio DJ shouting the morning awake — Robin Williams at the AFVN mic — applied to a deadpan-practical dev tool. Big poster energy on the surface, engineering rigor underneath. Emotional goals: a grin, then "oh, that's actually clever."
+Loud, irreverent, precise. The voice of a 1960s radio DJ shouting the morning awake — the inspiration is the film *Good Morning, Vietnam* and Robin Williams at the AFVN mic — applied to a deadpan-practical dev tool. Big poster energy on the surface, engineering rigor underneath. Emotional goals: a grin, then "oh, that's actually clever."
 
 ## Anti-references
 
