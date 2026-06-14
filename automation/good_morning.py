@@ -21,8 +21,9 @@ Nota: l'endpoint /api/oauth/usage NON e' utilizzabile qui — il token di
 `claude setup-token` non ha lo scope user:profile (risponde 403). Gli header
 di rate-limit della risposta messages sono la fonte ufficiale equivalente.
 
-Pensato per girare in GitHub Actions ogni ~5 minuti, con il PC spento
-(GitHub puo' comunque ritardare/saltare i run schedulati: vedi README).
+Pensato per essere richiamato in loop da GitHub Actions (un check ogni ~5
+min dentro lo stesso run, vedi il workflow), con il PC spento. Ogni
+invocazione e' single-shot: controlla una volta e invia o esce.
 Richiede: CLAUDE_CODE_OAUTH_TOKEN (generato con `claude setup-token`).
 """
 
