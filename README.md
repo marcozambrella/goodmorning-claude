@@ -72,3 +72,7 @@ You can also narrow the schedule in the workflow (e.g. `2-59/5 5-23 * * *`). Bec
 - **Residual edge case:** only if GitHub drops *every* scheduled tick for ~6 hours straight (longer than any gap observed so far) would there be a short pause at a hand-off, until the next tick fires and the loop resumes on its own.
 - This runs the workflow almost continuously. On a **public** repo that's free (unlimited Actions minutes); on a private repo it would quickly exhaust the monthly free minutes, so keep the repo public or budget accordingly.
 - The automated "goodmorning claude" goes to the `/v1/messages` API, **not** the Claude apps — so it will not appear in your Claude.ai / desktop conversation history. Its only visible effect is that your 5-hour usage window is started (visible on your usage/limits page while it's active).
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).
